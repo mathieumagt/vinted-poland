@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { FormField, Input, Textarea } from "@/components/ui/Field";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 
-type ItemDraft = { title: string; sku: string; photoFile: File | null };
+type ItemDraft = { title: string; size: string; sku: string; photoFile: File | null };
 
 async function uploadFile(file: File, folder: "photos" | "labels"): Promise<string> {
   const form = new FormData();
@@ -27,7 +27,7 @@ export function ManualOrderForm() {
   const [trackingCode, setTrackingCode] = useState("");
   const [note, setNote] = useState("");
   const [labelFile, setLabelFile] = useState<File | null>(null);
-  const [items, setItems] = useState<ItemDraft[]>([{ title: "", sku: "", photoFile: null }]);
+  const [items, setItems] = useState<ItemDraft[]>([{ title: "", size: "", sku: "", photoFile: null }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +46,7 @@ export function ManualOrderForm() {
           .filter((item) => item.title.trim())
           .map(async (item) => ({
             title: item.title,
+            size: item.size || undefined,
             sku: item.sku || undefined,
             thumbnailUrl: item.photoFile ? await uploadFile(item.photoFile, "photos") : undefined,
           }))
@@ -127,20 +128,28 @@ export function ManualOrderForm() {
             type="button"
             variant="secondary"
             size="sm"
-            onClick={() => setItems((prev) => [...prev, { title: "", sku: "", photoFile: null }])}
+            onClick={() => setItems((prev) => [...prev, { title: "", size: "", sku: "", photoFile: null }])}
           >
             + Add item
           </Button>
         </CardHeader>
         <CardBody className="space-y-4">
           {items.map((item, index) => (
-            <div key={index} className="grid grid-cols-1 gap-3 rounded-md border border-zinc-200 p-3 sm:grid-cols-3">
+            <div key={index} className="grid grid-cols-1 gap-3 rounded-md border border-zinc-200 p-3 sm:grid-cols-4">
               <FormField label="Item title" htmlFor={`item-title-${index}`}>
                 <Input
                   id={`item-title-${index}`}
                   value={item.title}
                   onChange={(e) => updateItem(index, { title: e.target.value })}
                   required
+                />
+              </FormField>
+              <FormField label="Size (optional)" htmlFor={`item-size-${index}`}>
+                <Input
+                  id={`item-size-${index}`}
+                  value={item.size}
+                  onChange={(e) => updateItem(index, { size: e.target.value })}
+                  placeholder="e.g. M"
                 />
               </FormField>
               <FormField label="SKU (optional)" htmlFor={`item-sku-${index}`}>
@@ -156,7 +165,7 @@ export function ManualOrderForm() {
                 />
               </FormField>
               {items.length > 1 && (
-                <div className="sm:col-span-3">
+                <div className="sm:col-span-4">
                   <button
                     type="button"
                     onClick={() => setItems((prev) => prev.filter((_, i) => i !== index))}

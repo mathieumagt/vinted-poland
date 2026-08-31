@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { LabelViewer } from "@/components/LabelViewer";
 import { ZoomableImage } from "@/components/ZoomableImage";
 
-type OrderItem = { id: string; title: string; thumbnailUrl: string | null };
+type OrderItem = { id: string; title: string; size: string | null; thumbnailUrl: string | null };
 
 type Order = {
   id: string;
@@ -67,26 +67,26 @@ export function OrderCard({ order }: { order: Order }) {
       </CardHeader>
       <CardBody className="space-y-4">
         <div className={`grid gap-2 ${order.items.length > 1 ? "grid-cols-3" : "grid-cols-1"}`}>
-          {order.items.map((item) =>
-            item.thumbnailUrl ? (
-              <div key={item.id} className={order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"}>
+          {order.items.map((item) => (
+            <div key={item.id} className={`relative ${order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"}`}>
+              {item.thumbnailUrl ? (
                 <ZoomableImage
                   src={item.thumbnailUrl}
                   alt={item.title}
                   className="h-full w-full rounded-lg border border-zinc-200 bg-zinc-50 object-cover cursor-zoom-in"
                 />
-              </div>
-            ) : (
-              <div
-                key={item.id}
-                className={`flex w-full items-center justify-center rounded-lg border border-dashed border-zinc-300 text-xs text-zinc-400 ${
-                  order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"
-                }`}
-              >
-                No photo
-              </div>
-            )
-          )}
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-zinc-300 text-xs text-zinc-400">
+                  No photo
+                </div>
+              )}
+              {item.size && (
+                <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
+                  Size {item.size}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
 
         <LabelViewer orderId={order.id} hasLabel={Boolean(order.shippingLabelUrl)} />

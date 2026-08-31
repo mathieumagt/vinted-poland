@@ -15,7 +15,11 @@ Orders can also be created manually (photo + label upload) for anything outside 
 
 - **Locally**: `src/instrumentation.ts` starts a background loop when the dev server boots, syncing every `SYNC_INTERVAL_MINUTES` (default 5). No cron needed for local testing.
 - **On Vercel**: the local loop is disabled (serverless functions don't stay alive for `setInterval`), and `vercel.json` registers a Cron Job that hits `/api/cron/sync` every 10 minutes instead. Set `CRON_SECRET` as a project env var — Vercel sends it automatically as a Bearer token when it calls the cron route.
-- **Vercel Hobby (free) plan note**: Vercel currently limits Hobby-plan Cron Jobs to roughly once a day regardless of the schedule you set. If you're on Hobby and want it running every few minutes for real, point an external scheduler (e.g. [cron-job.org](https://cron-job.org), a GitHub Actions scheduled workflow, etc.) at `https://<your-app>/api/cron/sync` with header `Authorization: Bearer <CRON_SECRET>` — or upgrade to Pro, where Vercel's own Cron Jobs run on the exact schedule.
+- **Vercel Hobby (free) plan note**: Vercel currently limits Hobby-plan Cron Jobs to roughly once a day regardless of the schedule you set. `.github/workflows/sync-cron.yml` works around this — it's a GitHub Actions workflow that hits `/api/cron/sync` every 10 minutes on its own, using your existing GitHub repo (no extra third-party account needed). To enable it, go to the repo's **Settings → Secrets and variables → Actions** and add two repository secrets:
+  - `APP_URL` — your deployed URL, e.g. `https://your-app.vercel.app`
+  - `CRON_SECRET` — the same value you set for the `CRON_SECRET` env var on the Vercel project
+  
+  Once both secrets exist the workflow runs automatically; you can also trigger it manually from the repo's **Actions** tab ("Sync DOTB orders" → **Run workflow**) to test it. If you'd rather upgrade to Vercel Pro instead, its own Cron Jobs run on the exact schedule and you can ignore this workflow (or just delete the file).
 
 ## Local setup
 

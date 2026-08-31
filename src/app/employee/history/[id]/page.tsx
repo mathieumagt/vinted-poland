@@ -46,6 +46,7 @@ export default async function EmployeeOrderDetailPage({ params }: { params: Prom
                   </div>
                 )}
                 <p className="text-zinc-600">{item.title}</p>
+                {item.size && <p className="text-xs font-medium text-zinc-500">Size {item.size}</p>}
               </div>
             ))}
           </CardBody>

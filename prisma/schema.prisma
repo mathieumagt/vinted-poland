@@ -128,6 +128,7 @@ model OrderItem {
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   dotbItemId    String?
   title         String
+  size          String?
   thumbnailUrl  String?
   sellingPrice  Decimal? @db.Decimal(10, 2)
   purchasePrice Decimal? @db.Decimal(10, 2)

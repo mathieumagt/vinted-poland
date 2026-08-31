@@ -57,6 +57,7 @@ const createOrderSchema = z.object({
     .array(
       z.object({
         title: z.string().min(1),
+        size: z.string().optional(),
         thumbnailUrl: z.string().url().optional(),
         sku: z.string().optional(),
       })
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
       items: {
         create: data.items.map((item) => ({
           title: item.title,
+          size: item.size,
           thumbnailUrl: item.thumbnailUrl,
           sku: item.sku,
         })),

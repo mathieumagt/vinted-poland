@@ -11,7 +11,7 @@ export default async function EmployeeQueuePage() {
       trackingCode: true,
       shippingLabelUrl: true,
       note: true,
-      items: { select: { id: true, title: true, thumbnailUrl: true } },
+      items: { select: { id: true, title: true, size: true, thumbnailUrl: true } },
     },
     orderBy: { orderDate: "asc" },
   });

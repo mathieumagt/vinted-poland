@@ -1,0 +1,21 @@
+name: Sync DOTB orders
+
+# Vercel's free (Hobby) plan only fires Cron Jobs about once a day regardless
+# of the schedule in vercel.json, so this workflow is the real "every 10
+# minutes" trigger for /api/cron/sync until/unless the Vercel project is on
+# Pro. Needs two repository secrets (Settings -> Secrets and variables ->
+# Actions): APP_URL (e.g. https://your-app.vercel.app) and CRON_SECRET (same
+# value as the CRON_SECRET env var set on the Vercel project).
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/sync
+        run: |
+          curl -sf --max-time 60 -X GET "${{ secrets.APP_URL }}/api/cron/sync" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

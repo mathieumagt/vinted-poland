@@ -5,6 +5,7 @@ import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { LabelViewer } from "@/components/LabelViewer";
 import { ReleaseButton } from "@/components/ReleaseButton";
 import { RetryDotbPackButton } from "@/components/RetryDotbPackButton";
+import { ItemSizeEditor } from "@/components/ItemSizeEditor";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 
 function formatDateTime(date: Date | null) {
@@ -74,6 +75,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                   </div>
                 )}
                 <p className="text-zinc-600">{item.title}</p>
+                <ItemSizeEditor orderId={order.id} itemId={item.id} initialSize={item.size} />
               </div>
             ))}
             {order.items.length === 0 && <p className="text-sm text-zinc-400">No items recorded.</p>}
