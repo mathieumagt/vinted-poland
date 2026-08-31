@@ -9,11 +9,11 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "node --env-file=.env --import tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --env-file=.env --import tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
