@@ -10,10 +10,12 @@ export function Nav({
   links,
   email,
   role,
+  balance,
 }: {
   links: NavLink[];
   email: string;
   role: "ADMIN" | "EMPLOYEE";
+  balance?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -52,6 +54,14 @@ export function Nav({
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
+          {balance && (
+            <span
+              title="Employee earnings — €2.00 per shipped parcel"
+              className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 font-semibold text-green-700"
+            >
+              💶 {balance}
+            </span>
+          )}
           <span className="hidden sm:inline">
             {email} <span className="text-zinc-400">· {role}</span>
           </span>
