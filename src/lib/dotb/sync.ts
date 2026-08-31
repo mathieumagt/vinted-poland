@@ -70,23 +70,25 @@ async function upsertOrder(dotbOrder: DotbOrder, localAccountId: string | null) 
     },
   });
 
-  for (const item of dotbOrder.items ?? []) {
-    await prisma.orderItem.upsert({
-      where: { orderId_dotbItemId: { orderId: order.id, dotbItemId: item.id } },
-      update: {
-        title: item.title,
-        thumbnailUrl: item.thumbnail_url,
-        sku: item.sku,
-      },
-      create: {
-        orderId: order.id,
-        dotbItemId: item.id,
-        title: item.title,
-        thumbnailUrl: item.thumbnail_url,
-        sku: item.sku,
-      },
-    });
-  }
+  await Promise.all(
+    (dotbOrder.items ?? []).map((item) =>
+      prisma.orderItem.upsert({
+        where: { orderId_dotbItemId: { orderId: order.id, dotbItemId: item.id } },
+        update: {
+          title: item.title,
+          thumbnailUrl: item.thumbnail_url,
+          sku: item.sku,
+        },
+        create: {
+          orderId: order.id,
+          dotbItemId: item.id,
+          title: item.title,
+          thumbnailUrl: item.thumbnail_url,
+          sku: item.sku,
+        },
+      })
+    )
+  );
 
   return order;
 }
@@ -107,10 +109,11 @@ async function syncOrdersForAccount(account: { id: string; dotbAccountId: string
       cursor,
     });
 
-    for (const dotbOrder of page.data) {
-      await upsertOrder(dotbOrder, account.id);
-      count += 1;
-    }
+    // Orders are independent of each other, so write them concurrently rather
+    // than one DB round-trip at a time — this matters a lot under high-latency
+    // connections (e.g. a Postgres provider in a different region).
+    await Promise.all(page.data.map((dotbOrder) => upsertOrder(dotbOrder, account.id)));
+    count += page.data.length;
 
     cursor = page.has_more && page.next_cursor ? page.next_cursor : undefined;
     if (cursor) await sleep(PAGE_DELAY_MS);
