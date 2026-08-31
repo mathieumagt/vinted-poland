@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum OrderSource {
+  DOTB
+  MANUAL
+}
+
+enum LocalStatus {
+  PENDING_REVIEW
+  RELEASED
+  PACKED
+  SHIPPED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  ordersReleased Order[]       @relation("ReleasedBy")
+  ordersPacked   Order[]       @relation("PackedBy")
+  ordersShipped  Order[]       @relation("ShippedBy")
+  ordersCreated  Order[]       @relation("CreatedBy")
+  activityLogs   ActivityLog[]
+}
+
+model VintedAccountSelection {
+  id               String    @id @default(cuid())
+  dotbAccountId    String    @unique
+  login            String
+  vintedId         String?
+  country          String?
+  bridgeConnected  Boolean   @default(false)
+  bridgeLastSeenAt DateTime?
+  enabled          Boolean   @default(false)
+  lastSyncedAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  orders Order[]
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  source       OrderSource @default(MANUAL)
+  dotbOrderId  String?     @unique
+
+  accountId String?
+  account   VintedAccountSelection? @relation(fields: [accountId], references: [id])
+
+  title                String
+  dotbStatus           String?
+  orderDate            DateTime?
+  shippingAddress      Json?
+  shippingLabelUrl     String?
+  shippingDeadlineDate DateTime?
+  carrierName          String?
+  trackingCode         String?
+  trackingUrl          String?
+  itemCount            Int?
+  vintedTransactionId  String?
+  vintedConversationId String?
+
+  subtotal   Decimal? @db.Decimal(10, 2)
+  shipping   Decimal? @db.Decimal(10, 2)
+  currency   String?
+  payout     Decimal? @db.Decimal(10, 2)
+  totalCost  Decimal? @db.Decimal(10, 2)
+
+  buyerVintedId    String?
+  buyerLogin       String?
+  buyerName        String?
+  buyerEmail       String?
+  buyerCountryCode String?
+
+  note String?
+
+  localStatus LocalStatus @default(PENDING_REVIEW)
+
+  releasedAt   DateTime?
+  releasedById String?
+  releasedBy   User?     @relation("ReleasedBy", fields: [releasedById], references: [id])
+
+  packedAt   DateTime?
+  packedById String?
+  packedBy   User?     @relation("PackedBy", fields: [packedById], references: [id])
+
+  shippedAt   DateTime?
+  shippedById String?
+  shippedBy   User?     @relation("ShippedBy", fields: [shippedById], references: [id])
+
+  createdById String?
+  createdBy   User?   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  dotbPackSyncStatus String?
+  dotbPackSyncError  String?
+
+  items        OrderItem[]
+  activityLogs ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([localStatus])
+  @@index([accountId])
+  @@index([shippedAt])
+  @@index([orderDate])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dotbItemId    String?
+  title         String
+  thumbnailUrl  String?
+  sellingPrice  Decimal? @db.Decimal(10, 2)
+  purchasePrice Decimal? @db.Decimal(10, 2)
+  sku           String?
+  location      String?
+  catalogId     String?
+  vintedId      String?
+  vintedItemId  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([orderId, dotbItemId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([createdAt])
+}
