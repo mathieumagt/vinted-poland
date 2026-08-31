@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { LabelViewer } from "@/components/LabelViewer";
+import { ZoomableImage } from "@/components/ZoomableImage";
 
 type OrderItem = { id: string; title: string; thumbnailUrl: string | null };
 
@@ -68,15 +69,13 @@ export function OrderCard({ order }: { order: Order }) {
         <div className={`grid gap-2 ${order.items.length > 1 ? "grid-cols-3" : "grid-cols-1"}`}>
           {order.items.map((item) =>
             item.thumbnailUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={item.id}
-                src={item.thumbnailUrl}
-                alt={item.title}
-                className={`w-full rounded-lg border border-zinc-200 bg-zinc-50 object-cover ${
-                  order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"
-                }`}
-              />
+              <div key={item.id} className={order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"}>
+                <ZoomableImage
+                  src={item.thumbnailUrl}
+                  alt={item.title}
+                  className="h-full w-full rounded-lg border border-zinc-200 bg-zinc-50 object-cover cursor-zoom-in"
+                />
+              </div>
             ) : (
               <div
                 key={item.id}
