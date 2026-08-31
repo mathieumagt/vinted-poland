@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { OrderCard } from "@/components/OrderCard";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { SyncButton } from "@/components/SyncButton";
 
 export default async function EmployeeQueuePage() {
   const orders = await prisma.order.findMany({
@@ -19,6 +20,13 @@ export default async function EmployeeQueuePage() {
   return (
     <div>
       <AutoRefresh />
+
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border-2 border-accent bg-accent-soft px-4 py-3">
+        <p className="text-sm font-medium text-zinc-800">
+          📦 Just received a Shein parcel? Click <strong>Sync now</strong> to pull in the latest orders.
+        </p>
+        <SyncButton />
+      </div>
 
       <div className="mb-6 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3">
         <p className="text-base font-bold text-amber-900">

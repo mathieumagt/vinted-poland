@@ -4,7 +4,7 @@ import { runSync } from "@/lib/dotb/sync";
 import { DotbApiError } from "@/lib/dotb/client";
 
 export async function POST() {
-  const auth = await requireApiUser(["ADMIN"]);
+  const auth = await requireApiUser(["ADMIN", "EMPLOYEE"]);
   if (auth instanceof NextResponse) return auth;
 
   try {
