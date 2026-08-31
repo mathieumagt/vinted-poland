@@ -126,7 +126,9 @@ async function syncOrdersForAccount(account: { id: string; dotbAccountId: string
 
 /** Pulls fresh orders for the enabled accounts. Doesn't touch the account list itself
  * (that only changes via the explicit "Refresh from DOTB" action) to keep this fast. */
-export async function runSync(userId?: string): Promise<{ ordersSynced: number; accountCount: number }> {
+export async function runSync(
+  userId?: string
+): Promise<{ ordersSynced: number; accountCount: number; autoReleased: number }> {
   const enabledAccounts = await prisma.vintedAccountSelection.findMany({
     where: { enabled: true },
     select: { id: true, dotbAccountId: true },
@@ -135,11 +137,21 @@ export async function runSync(userId?: string): Promise<{ ordersSynced: number; 
   const counts = await Promise.all(enabledAccounts.map((account) => syncOrdersForAccount(account)));
   const ordersSynced = counts.reduce((sum, n) => sum + n, 0);
 
+  // The employee queue is driven by DOTB's own "label sent" status rather than a
+  // manual admin release — once DOTB reports the label exists, the order is ready
+  // to pack and ship, so it auto-advances out of Pending review in one bulk update.
+  // This only ever moves PENDING_REVIEW -> RELEASED, never touches an order that's
+  // already been released/packed/shipped.
+  const { count: autoReleased } = await prisma.order.updateMany({
+    where: { source: "DOTB", dotbStatus: "label_sent", localStatus: "PENDING_REVIEW" },
+    data: { localStatus: "RELEASED", releasedAt: new Date() },
+  });
+
   await logActivity({
     action: "SYNC_RUN",
     userId,
-    metadata: { ordersSynced, accountCount: enabledAccounts.length },
+    metadata: { ordersSynced, accountCount: enabledAccounts.length, autoReleased },
   });
 
-  return { ordersSynced, accountCount: enabledAccounts.length };
+  return { ordersSynced, accountCount: enabledAccounts.length, autoReleased };
 }

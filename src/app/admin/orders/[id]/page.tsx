@@ -48,7 +48,12 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
               )}
             </p>
           </div>
-          {order.localStatus === "PENDING_REVIEW" && <ReleaseButton orderId={order.id} />}
+          {order.localStatus === "PENDING_REVIEW" && order.source === "MANUAL" && <ReleaseButton orderId={order.id} />}
+          {order.localStatus === "PENDING_REVIEW" && order.source === "DOTB" && (
+            <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm text-zinc-500">
+              Waiting for DOTB to send the shipping label…
+            </span>
+          )}
         </div>
 
         <Card>

@@ -17,8 +17,8 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-xl font-semibold text-zinc-900">Pending review</h1>
           <p className="text-sm text-zinc-500">
-            Orders synced from DOTB (or added manually), waiting for the matching Shein parcel to arrive before
-            being released to the employee.
+            DOTB orders here are still waiting for a shipping label — they&apos;ll move to the employee queue
+            automatically once DOTB sends it. Manual orders need a click on &quot;Release&quot; instead.
           </p>
         </div>
         <SyncButton />

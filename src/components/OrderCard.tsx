@@ -116,6 +116,10 @@ export function OrderCard({ order }: { order: Order }) {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
+        <p className="text-xs text-zinc-400">
+          Only click once the parcel is packed and ready to go — this also marks the order as
+          packed on DOTB and can&apos;t be undone.
+        </p>
         <Button onClick={markShipped} disabled={shipping} className="w-full">
           {shipping ? "Marking as shipped…" : "Mark as shipped"}
         </Button>
