@@ -21,7 +21,7 @@ export function SyncButton() {
         setError(body.error ?? "Sync failed.");
         return;
       }
-      setMessage(`Synced ${body.data.ordersSynced} order(s) from ${body.data.accountsSynced} account(s).`);
+      setMessage(`Synced ${body.data.ordersSynced} order(s) from ${body.data.accountCount} account(s).`);
       router.refresh();
     } catch {
       setError("Could not reach the server.");

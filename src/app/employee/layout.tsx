@@ -11,7 +11,7 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   const session = await requireAnyRole(["EMPLOYEE", "ADMIN"]);
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <Nav links={LINKS} email={session.email} role={session.role} />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
     </div>

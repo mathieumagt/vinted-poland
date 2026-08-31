@@ -10,11 +10,6 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function toDecimalString(value: string | number | null | undefined): string | null {
-  if (value === null || value === undefined) return null;
-  return String(value);
-}
-
 function toDateOrNull(value: string | null | undefined): Date | null {
   if (!value) return null;
   const d = new Date(value);
@@ -50,6 +45,8 @@ export async function syncAccounts(): Promise<{ synced: number }> {
   return { synced: data.length };
 }
 
+/** We only surface photo + shipping label to the two users, so the sync only pulls
+ * item data (which carries the photo) — no buyer/financial fields are requested. */
 async function upsertOrder(dotbOrder: DotbOrder, localAccountId: string | null) {
   const baseData = {
     source: "DOTB" as const,
@@ -60,22 +57,8 @@ async function upsertOrder(dotbOrder: DotbOrder, localAccountId: string | null) 
     shippingAddress: (dotbOrder.shipping_address ?? undefined) as Prisma.InputJsonValue | undefined,
     shippingLabelUrl: dotbOrder.shipping_label_url,
     shippingDeadlineDate: toDateOrNull(dotbOrder.shipping_deadline_date),
-    carrierName: dotbOrder.carrier_name,
     trackingCode: dotbOrder.tracking_code,
-    trackingUrl: dotbOrder.tracking_url,
     itemCount: dotbOrder.item_count ?? undefined,
-    vintedTransactionId: dotbOrder.vinted_transaction_id ? String(dotbOrder.vinted_transaction_id) : null,
-    vintedConversationId: dotbOrder.vinted_conversation_id ? String(dotbOrder.vinted_conversation_id) : null,
-    subtotal: toDecimalString(dotbOrder.subtotal),
-    shipping: toDecimalString(dotbOrder.shipping),
-    currency: dotbOrder.currency,
-    payout: toDecimalString(dotbOrder.payout),
-    totalCost: toDecimalString(dotbOrder.total_cost),
-    buyerVintedId: dotbOrder.buyer?.vinted_id ? String(dotbOrder.buyer.vinted_id) : null,
-    buyerLogin: dotbOrder.buyer?.login ?? null,
-    buyerName: dotbOrder.buyer?.name ?? null,
-    buyerEmail: dotbOrder.buyer?.email ?? null,
-    buyerCountryCode: dotbOrder.buyer?.country_code ?? null,
   };
 
   const order = await prisma.order.upsert({
@@ -93,26 +76,14 @@ async function upsertOrder(dotbOrder: DotbOrder, localAccountId: string | null) 
       update: {
         title: item.title,
         thumbnailUrl: item.thumbnail_url,
-        sellingPrice: toDecimalString(item.selling_price),
-        purchasePrice: toDecimalString(item.purchase_price),
         sku: item.sku,
-        location: item.location,
-        catalogId: item.catalog_id ? String(item.catalog_id) : null,
-        vintedId: item.vinted_id ? String(item.vinted_id) : null,
-        vintedItemId: item.vinted_item_id ? String(item.vinted_item_id) : null,
       },
       create: {
         orderId: order.id,
         dotbItemId: item.id,
         title: item.title,
         thumbnailUrl: item.thumbnail_url,
-        sellingPrice: toDecimalString(item.selling_price),
-        purchasePrice: toDecimalString(item.purchase_price),
         sku: item.sku,
-        location: item.location,
-        catalogId: item.catalog_id ? String(item.catalog_id) : null,
-        vintedId: item.vinted_id ? String(item.vinted_id) : null,
-        vintedItemId: item.vinted_item_id ? String(item.vinted_item_id) : null,
       },
     });
   }
@@ -131,7 +102,7 @@ async function syncOrdersForAccount(account: { id: string; dotbAccountId: string
     const page = await listOrders({
       accountId: account.dotbAccountId,
       from,
-      include: ["items", "buyer"],
+      include: ["items"],
       limit: 100,
       cursor,
     });
@@ -153,25 +124,22 @@ async function syncOrdersForAccount(account: { id: string; dotbAccountId: string
   return count;
 }
 
-export async function runSync(userId?: string): Promise<{ accountsSynced: number; ordersSynced: number }> {
-  const { synced: accountsSynced } = await syncAccounts();
-
+/** Pulls fresh orders for the enabled accounts. Doesn't touch the account list itself
+ * (that only changes via the explicit "Refresh from DOTB" action) to keep this fast. */
+export async function runSync(userId?: string): Promise<{ ordersSynced: number; accountCount: number }> {
   const enabledAccounts = await prisma.vintedAccountSelection.findMany({
     where: { enabled: true },
     select: { id: true, dotbAccountId: true },
   });
 
-  let ordersSynced = 0;
-  for (const account of enabledAccounts) {
-    ordersSynced += await syncOrdersForAccount(account);
-    await sleep(PAGE_DELAY_MS);
-  }
+  const counts = await Promise.all(enabledAccounts.map((account) => syncOrdersForAccount(account)));
+  const ordersSynced = counts.reduce((sum, n) => sum + n, 0);
 
   await logActivity({
     action: "SYNC_RUN",
     userId,
-    metadata: { accountsSynced, ordersSynced, enabledAccountCount: enabledAccounts.length },
+    metadata: { ordersSynced, accountCount: enabledAccounts.length },
   });
 
-  return { accountsSynced, ordersSynced };
+  return { ordersSynced, accountCount: enabledAccounts.length };
 }

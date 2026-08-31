@@ -13,20 +13,23 @@ export default async function EmployeeOrderDetailPage({ params }: { params: Prom
   const { id } = await params;
   const order = await prisma.order.findUnique({
     where: { id },
-    include: { items: true, account: true, shippedBy: true },
+    include: { items: true, shippedBy: true },
   });
   if (!order) notFound();
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-2 space-y-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-zinc-900">{order.title}</h1>
-          <OrderStatusBadge status={order.localStatus} />
+      <div className="space-y-6 lg:col-span-2">
+        <div>
+          <div className="mb-1 flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-zinc-900">{order.title}</h1>
+            <OrderStatusBadge status={order.localStatus} />
+          </div>
+          {order.trackingCode && <p className="text-sm text-zinc-500">Ref: {order.trackingCode}</p>}
         </div>
 
         <Card>
-          <CardHeader className="font-medium text-zinc-900">Items ({order.items.length})</CardHeader>
+          <CardHeader className="font-medium text-zinc-900">Photos ({order.items.length})</CardHeader>
           <CardBody className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {order.items.map((item) => (
               <div key={item.id} className="text-sm">
@@ -35,14 +38,14 @@ export default async function EmployeeOrderDetailPage({ params }: { params: Prom
                   <img
                     src={item.thumbnailUrl}
                     alt={item.title}
-                    className="mb-1 aspect-square w-full rounded-md border border-zinc-200 object-cover"
+                    className="mb-1.5 aspect-square w-full rounded-lg border border-zinc-200 object-cover"
                   />
                 ) : (
-                  <div className="mb-1 flex aspect-square w-full items-center justify-center rounded-md border border-dashed border-zinc-300 text-xs text-zinc-400">
+                  <div className="mb-1.5 flex aspect-square w-full items-center justify-center rounded-lg border border-dashed border-zinc-300 text-xs text-zinc-400">
                     No photo
                   </div>
                 )}
-                <p className="font-medium text-zinc-800">{item.title}</p>
+                <p className="text-zinc-600">{item.title}</p>
               </div>
             ))}
           </CardBody>
@@ -51,19 +54,12 @@ export default async function EmployeeOrderDetailPage({ params }: { params: Prom
         <Card>
           <CardHeader className="font-medium text-zinc-900">Shipping label</CardHeader>
           <CardBody>
-            <LabelViewer url={order.shippingLabelUrl} />
+            <LabelViewer orderId={order.id} hasLabel={Boolean(order.shippingLabelUrl)} />
           </CardBody>
         </Card>
       </div>
 
       <div className="space-y-6">
-        <Card>
-          <CardHeader className="font-medium text-zinc-900">Buyer</CardHeader>
-          <CardBody className="space-y-1 text-sm text-zinc-600">
-            <p>{order.buyerName || order.buyerLogin || "—"}</p>
-            {order.trackingCode && <p>Tracking: {order.trackingCode}</p>}
-          </CardBody>
-        </Card>
         <Card>
           <CardHeader className="font-medium text-zinc-900">Timeline</CardHeader>
           <CardBody className="space-y-2 text-sm text-zinc-600">

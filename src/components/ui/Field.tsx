@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, LabelHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
 const fieldClasses =
-  "w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 disabled:bg-zinc-100";
+  "w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm transition-shadow focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft disabled:bg-zinc-100";
 
 export function Label({ className = "", ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
   return <label className={`mb-1 block text-sm font-medium text-zinc-700 ${className}`} {...props} />;

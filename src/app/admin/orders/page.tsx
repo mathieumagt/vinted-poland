@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { OrderTable } from "@/components/OrderTable";
+import { OrderTable, orderRowSelect } from "@/components/OrderTable";
 import type { LocalStatus, Prisma } from "@prisma/client";
 
 const STATUS_TABS: { value: LocalStatus | "ALL"; label: string }[] = [
@@ -23,19 +23,14 @@ export default async function AdminOrdersPage({
     ...(status !== "ALL" ? { localStatus: status } : {}),
     ...(q
       ? {
-          OR: [
-            { title: { contains: q, mode: "insensitive" } },
-            { buyerName: { contains: q, mode: "insensitive" } },
-            { buyerLogin: { contains: q, mode: "insensitive" } },
-            { trackingCode: { contains: q, mode: "insensitive" } },
-          ],
+          OR: [{ title: { contains: q, mode: "insensitive" } }, { trackingCode: { contains: q, mode: "insensitive" } }],
         }
       : {}),
   };
 
   const orders = await prisma.order.findMany({
     where,
-    include: { account: true },
+    select: orderRowSelect,
     orderBy: { orderDate: "desc" },
     take: 200,
   });
@@ -45,15 +40,15 @@ export default async function AdminOrdersPage({
       <h1 className="mb-4 text-xl font-semibold text-zinc-900">All orders</h1>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1">
+        <div className="flex gap-1 rounded-lg bg-zinc-100 p-1">
           {STATUS_TABS.map((tab) => {
             const href = tab.value === "ALL" ? "/admin/orders" : `/admin/orders?status=${tab.value}`;
             return (
               <Link
                 key={tab.value}
                 href={href}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                  status === tab.value ? "bg-zinc-900 text-white" : "bg-white text-zinc-600 hover:bg-zinc-100"
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  status === tab.value ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"
                 }`}
               >
                 {tab.label}
@@ -67,8 +62,8 @@ export default async function AdminOrdersPage({
             type="search"
             name="q"
             defaultValue={q}
-            placeholder="Search title, buyer, tracking…"
-            className="w-64 rounded-md border border-zinc-300 px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none"
+            placeholder="Search title or tracking ref…"
+            className="w-64 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft"
           />
         </form>
       </div>

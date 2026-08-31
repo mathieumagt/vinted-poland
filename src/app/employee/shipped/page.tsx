@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { OrderTable } from "@/components/OrderTable";
+import { OrderTable, orderRowSelect } from "@/components/OrderTable";
 import { daysAgo } from "@/lib/dates";
 
 export default async function EmployeeShippedPage() {
@@ -7,7 +7,7 @@ export default async function EmployeeShippedPage() {
 
   const orders = await prisma.order.findMany({
     where: { localStatus: "SHIPPED", shippedAt: { gte: sevenDaysAgo } },
-    include: { account: true },
+    select: orderRowSelect,
     orderBy: { shippedAt: "desc" },
   });
 

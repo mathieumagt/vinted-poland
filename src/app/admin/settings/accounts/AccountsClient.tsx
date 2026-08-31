@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 
@@ -10,44 +10,44 @@ type Account = {
   country: string | null;
   bridgeConnected: boolean;
   enabled: boolean;
-  lastSyncedAt: string | null;
+  lastSyncedAt: Date | string | null;
 };
 
-export function AccountsClient() {
-  const [accounts, setAccounts] = useState<Account[] | null>(null);
+export function AccountsClient({ initialAccounts }: { initialAccounts: Account[] }) {
+  const [accounts, setAccounts] = useState(initialAccounts);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  async function load() {
+  async function refresh() {
+    setRefreshing(true);
     setError(null);
     try {
-      const res = await fetch("/api/accounts");
+      const res = await fetch("/api/accounts/refresh", { method: "POST" });
       const body = await res.json();
       if (!res.ok) {
-        setError(body.error ?? "Could not load Vinted accounts.");
+        setError(body.error ?? "Could not refresh from DOTB.");
         return;
       }
       setAccounts(body.data);
     } catch {
-      setError("Could not reach the server. Check DOTB_API_TOKEN is configured.");
+      setError("Could not reach the server.");
+    } finally {
+      setRefreshing(false);
     }
   }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial client-side data fetch on mount
-    load();
-  }, []);
-
   async function toggle(id: string, enabled: boolean) {
     setTogglingId(id);
+    setAccounts((prev) => prev.map((a) => (a.id === id ? { ...a, enabled } : a)));
     try {
       const res = await fetch(`/api/accounts/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled }),
       });
-      if (res.ok) {
-        setAccounts((prev) => prev?.map((a) => (a.id === id ? { ...a, enabled } : a)) ?? null);
+      if (!res.ok) {
+        setAccounts((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !enabled } : a)));
       }
     } finally {
       setTogglingId(null);
@@ -58,17 +58,16 @@ export function AccountsClient() {
     <Card>
       <CardHeader className="flex items-center justify-between font-medium text-zinc-900">
         <span>Connected Vinted accounts</span>
-        <Button variant="secondary" size="sm" onClick={load}>
-          Refresh from DOTB
+        <Button variant="secondary" size="sm" onClick={refresh} disabled={refreshing}>
+          {refreshing ? "Refreshing…" : "Refresh from DOTB"}
         </Button>
       </CardHeader>
       <CardBody>
         {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-        {!accounts && !error && <p className="text-sm text-zinc-500">Loading…</p>}
-        {accounts && accounts.length === 0 && (
-          <p className="text-sm text-zinc-500">No connected Vinted accounts found in DOTB.</p>
+        {accounts.length === 0 && (
+          <p className="text-sm text-zinc-500">No accounts yet — click &quot;Refresh from DOTB&quot; to fetch them.</p>
         )}
-        {accounts && accounts.length > 0 && (
+        {accounts.length > 0 && (
           <ul className="divide-y divide-zinc-100">
             {accounts.map((account) => (
               <li key={account.id} className="flex items-center justify-between py-3">
@@ -89,7 +88,7 @@ export function AccountsClient() {
                     checked={account.enabled}
                     disabled={togglingId === account.id}
                     onChange={(e) => toggle(account.id, e.target.checked)}
-                    className="h-4 w-4"
+                    className="h-4 w-4 accent-accent"
                   />
                 </label>
               </li>

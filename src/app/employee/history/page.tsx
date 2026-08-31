@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { OrderTable } from "@/components/OrderTable";
+import { OrderTable, orderRowSelect } from "@/components/OrderTable";
 import type { Prisma } from "@prisma/client";
 
 export default async function EmployeeHistoryPage({
@@ -13,20 +13,13 @@ export default async function EmployeeHistoryPage({
   const where: Prisma.OrderWhereInput = {
     localStatus: "SHIPPED",
     ...(q
-      ? {
-          OR: [
-            { title: { contains: q, mode: "insensitive" } },
-            { buyerName: { contains: q, mode: "insensitive" } },
-            { buyerLogin: { contains: q, mode: "insensitive" } },
-            { trackingCode: { contains: q, mode: "insensitive" } },
-          ],
-        }
+      ? { OR: [{ title: { contains: q, mode: "insensitive" } }, { trackingCode: { contains: q, mode: "insensitive" } }] }
       : {}),
   };
 
   const orders = await prisma.order.findMany({
     where,
-    include: { account: true },
+    select: orderRowSelect,
     orderBy: { shippedAt: "desc" },
     take: 200,
   });
@@ -43,8 +36,8 @@ export default async function EmployeeHistoryPage({
             type="search"
             name="q"
             defaultValue={q}
-            placeholder="Search title, buyer, tracking…"
-            className="w-64 rounded-md border border-zinc-300 px-3 py-1.5 text-sm focus:border-zinc-500 focus:outline-none"
+            placeholder="Search title or tracking ref…"
+            className="w-64 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft"
           />
         </form>
       </div>

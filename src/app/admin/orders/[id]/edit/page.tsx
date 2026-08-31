@@ -4,7 +4,20 @@ import { EditOrderForm } from "@/components/forms/EditOrderForm";
 
 export default async function EditOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await prisma.order.findUnique({ where: { id } });
+  const order = await prisma.order.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      source: true,
+      title: true,
+      buyerName: true,
+      buyerLogin: true,
+      buyerCountryCode: true,
+      trackingCode: true,
+      note: true,
+      shippingLabelUrl: true,
+    },
+  });
   if (!order || order.source !== "MANUAL") notFound();
 
   return (
