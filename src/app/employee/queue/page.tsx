@@ -35,12 +35,11 @@ export default async function EmployeeQueuePage() {
         <SyncButton />
       </div>
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <h1 className="text-xl font-semibold text-zinc-900">In progress</h1>
-        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-right shadow-sm">
-          <p className="text-2xl font-bold text-accent">{orders.length}</p>
-          <p className="text-xs text-zinc-500">order{orders.length === 1 ? "" : "s"} to ship</p>
-        </div>
+      <div className="mb-6 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3">
+        <p className="text-base font-bold text-amber-900">⚠ Remove ALL Shein tags before shipping</p>
+        <p className="text-sm text-amber-800">
+          There can be more than one tag per item — check the collar AND the waist/hips.
+        </p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -53,6 +52,14 @@ export default async function EmployeeQueuePage() {
             <p className="text-xs text-zinc-500">{step.body}</p>
           </div>
         ))}
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <h1 className="text-xl font-semibold text-zinc-900">In progress</h1>
+        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-right shadow-sm">
+          <p className="text-2xl font-bold text-accent">{orders.length}</p>
+          <p className="text-xs text-zinc-500">order{orders.length === 1 ? "" : "s"} to ship</p>
+        </div>
       </div>
 
       <p className="mb-6 text-sm text-zinc-500">
