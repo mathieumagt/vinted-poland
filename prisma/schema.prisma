@@ -37,6 +37,19 @@ model User {
   ordersShipped  Order[]       @relation("ShippedBy")
   ordersCreated  Order[]       @relation("CreatedBy")
   activityLogs   ActivityLog[]
+  paymentsMarked Payment[]     @relation("PaymentMarkedBy")
+}
+
+model Payment {
+  id           String   @id @default(cuid())
+  amountCents  Int
+  parcelCount  Int
+  note         String?
+  paidAt       DateTime @default(now())
+  markedById   String?
+  markedBy     User?    @relation("PaymentMarkedBy", fields: [markedById], references: [id])
+
+  @@index([paidAt])
 }
 
 model VintedAccountSelection {

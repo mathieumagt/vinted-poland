@@ -55,12 +55,13 @@ export function Nav({
         </div>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
           {balance && (
-            <span
-              title="Employee earnings — €2.00 per shipped parcel"
-              className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 font-semibold text-green-700"
+            <Link
+              href={role === "ADMIN" ? "/admin/payments" : "/employee/payments"}
+              title="Employee earnings since the last payout — €2.00 per shipped parcel"
+              className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 font-semibold text-green-700 hover:bg-green-100"
             >
               💶 {balance}
-            </span>
+            </Link>
           )}
           <span className="hidden sm:inline">
             {email} <span className="text-zinc-400">· {role}</span>
