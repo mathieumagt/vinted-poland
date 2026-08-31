@@ -59,16 +59,16 @@ export function OrderCard({ order }: { order: Order }) {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="flex items-start justify-between gap-2">
+      <CardHeader className="flex items-start justify-between gap-2 !py-2.5">
         <div>
-          <h3 className="font-medium leading-snug text-zinc-900">{order.title}</h3>
+          <h3 className="text-sm font-medium leading-snug text-zinc-900">{order.title}</h3>
           {order.trackingCode && <p className="mt-0.5 text-xs text-zinc-400">Ref: {order.trackingCode}</p>}
         </div>
       </CardHeader>
-      <CardBody className="space-y-4">
+      <CardBody className="space-y-3 !py-3">
         <div className={`grid gap-2 ${order.items.length > 1 ? "grid-cols-3" : "grid-cols-1"}`}>
           {order.items.map((item) => (
-            <div key={item.id} className={`relative ${order.items.length > 1 ? "aspect-square" : "aspect-[4/3]"}`}>
+            <div key={item.id} className={`relative ${order.items.length > 1 ? "aspect-square" : "aspect-[16/11]"}`}>
               {item.thumbnailUrl ? (
                 <ZoomableImage
                   src={item.thumbnailUrl}
@@ -89,7 +89,7 @@ export function OrderCard({ order }: { order: Order }) {
           ))}
         </div>
 
-        <LabelViewer orderId={order.id} hasLabel={Boolean(order.shippingLabelUrl)} />
+        <LabelViewer orderId={order.id} hasLabel={Boolean(order.shippingLabelUrl)} compact />
 
         <div>
           {noteOpen ? (

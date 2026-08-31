@@ -1,9 +1,21 @@
 "use client";
 
-export function LabelViewer({ orderId, hasLabel }: { orderId: string; hasLabel: boolean }) {
+export function LabelViewer({
+  orderId,
+  hasLabel,
+  compact = false,
+}: {
+  orderId: string;
+  hasLabel: boolean;
+  compact?: boolean;
+}) {
   if (!hasLabel) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-400">
+      <div
+        className={`flex items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-400 ${
+          compact ? "h-28" : "h-40"
+        }`}
+      >
         No shipping label yet
       </div>
     );
@@ -30,10 +42,10 @@ export function LabelViewer({ orderId, hasLabel }: { orderId: string; hasLabel: 
     <div>
       <iframe
         src={previewUrl}
-        className="h-[420px] w-full rounded-lg border border-zinc-200 bg-white shadow-sm"
+        className={`w-full rounded-lg border border-zinc-200 bg-white shadow-sm ${compact ? "h-[240px]" : "h-[420px]"}`}
         title="Shipping label"
       />
-      <div className="mt-2 flex gap-4 text-sm">
+      <div className={`mt-2 flex gap-4 ${compact ? "text-xs" : "text-sm"}`}>
         <button type="button" onClick={handlePrint} className="font-medium text-accent hover:text-accent-hover">
           Print
         </button>
