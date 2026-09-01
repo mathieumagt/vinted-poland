@@ -23,7 +23,6 @@ export function LabelViewer({
 
   const previewUrl = `/api/orders/${orderId}/label`;
   const downloadUrl = `/api/orders/${orderId}/label?download=1`;
-  const originalUrl = `/api/orders/${orderId}/label?original=1`;
 
   function handlePrint() {
     // Printing straight from the embedded viewer's own toolbar can fail on some
@@ -55,9 +54,6 @@ export function LabelViewer({
         </a>
         <a href={downloadUrl} className="font-medium text-accent hover:text-accent-hover">
           Download
-        </a>
-        <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-zinc-600">
-          Full page
         </a>
       </div>
     </div>
