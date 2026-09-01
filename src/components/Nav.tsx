@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type NavLink = { href: string; label: string };
 
@@ -66,6 +67,7 @@ export function Nav({
           <span className="hidden sm:inline">
             {email} <span className="text-zinc-400">· {role}</span>
           </span>
+          <ThemeToggle />
           <button
             onClick={handleLogout}
             disabled={loggingOut}
