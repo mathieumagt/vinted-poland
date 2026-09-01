@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireApiUser } from "@/lib/auth/api";
+import { cropLabelToThermalSize } from "@/lib/labelCrop";
 
 const EXTENSION_BY_CONTENT_TYPE: Record<string, string> = {
   "application/pdf": "pdf",
@@ -29,7 +30,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
-  const download = new URL(req.url).searchParams.get("download") === "1";
+  const url = new URL(req.url);
+  const download = url.searchParams.get("download") === "1";
+  const original = url.searchParams.get("original") === "1";
 
   const order = await prisma.order.findUnique({ where: { id }, select: { title: true, shippingLabelUrl: true } });
   if (!order?.shippingLabelUrl) {
@@ -43,11 +46,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   // Labels are small (a few hundred KB) — buffering avoids streaming edge cases
   // (e.g. a client aborting the request mid-stream) taking down the connection.
-  const bytes = await upstream.arrayBuffer();
+  const upstreamBytes = await upstream.arrayBuffer();
 
   const contentType = upstream.headers.get("content-type")?.split(";")[0].trim() ?? "application/pdf";
   const extension = EXTENSION_BY_CONTENT_TYPE[contentType] ?? "pdf";
   const filename = `label-${slugify(order.title) || "order"}.${extension}`;
+
+  // Crop PDFs down to a standard thermal-printer label size by default (DOTB's
+  // full-page labels have a lot of surrounding content that isn't part of the
+  // actual label — see src/lib/labelCrop.ts). `?original=1` bypasses this to
+  // get DOTB's raw PDF back, e.g. if a particular carrier's layout doesn't
+  // crop well. Never applies to image labels.
+  let bytes = Buffer.from(upstreamBytes);
+  if (contentType === "application/pdf" && !original) {
+    try {
+      bytes = Buffer.from(await cropLabelToThermalSize(upstreamBytes));
+    } catch (err) {
+      console.error("Failed to crop shipping label, serving the original PDF instead:", err);
+    }
+  }
 
   return new NextResponse(bytes, {
     headers: {
