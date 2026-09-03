@@ -13,6 +13,7 @@ export default async function LoginPage() {
         <ThemeToggle />
       </div>
       <div className="w-full max-w-sm">
+        <p className="mb-1 text-center text-4xl font-extrabold tracking-widest text-accent">MAGT</p>
         <h1 className="mb-1 text-center text-xl font-semibold text-zinc-900">Vinted Poland</h1>
         <p className="mb-6 text-center text-sm text-zinc-500">Fulfillment workflow tracker</p>
         <LoginForm />

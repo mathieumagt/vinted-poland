@@ -33,10 +33,13 @@ export function Nav({
     <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-accent text-xs font-bold text-white">V</span>
-            Vinted Poland
-          </span>
+          <div className="flex flex-col leading-none">
+            <span className="text-[10px] font-extrabold tracking-widest text-accent">MAGT</span>
+            <span className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+              <span className="grid h-6 w-6 place-items-center rounded-md bg-accent text-xs font-bold text-white">V</span>
+              Vinted Poland
+            </span>
+          </div>
           <nav className="flex gap-1">
             {links.map((link) => {
               const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
