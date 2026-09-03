@@ -140,13 +140,25 @@ export async function runSync(
   const counts = await Promise.all(enabledAccounts.map((account) => syncOrdersForAccount(account)));
   const ordersSynced = counts.reduce((sum, n) => sum + n, 0);
 
-  // The employee queue is driven by DOTB's own "label sent" status rather than a
-  // manual admin release — once DOTB reports the label exists, the order is ready
-  // to pack and ship, so it auto-advances out of Pending review in one bulk update.
-  // This only ever moves PENDING_REVIEW -> RELEASED, never touches an order that's
-  // already been released/packed/shipped.
+  // The employee queue is driven by DOTB having a label ready, rather than a
+  // manual admin release — once a label exists, the order is ready to pack
+  // and ship, so it auto-advances out of Pending review in one bulk update.
+  // Checking for a non-null shippingLabelUrl (rather than matching the exact
+  // "label_sent" status string) also catches orders whose very first sync
+  // already finds them further along (packed/shipped on DOTB's side, e.g. a
+  // carrier scan happened before we ever saw the order) — those still need a
+  // human here to physically pack and ship the item, so they must reach the
+  // queue too. Cancelled/suspended/returning orders are excluded even if a
+  // label happens to still be on file. This only ever moves
+  // PENDING_REVIEW -> RELEASED, never touches an order that's already been
+  // released/packed/shipped.
   const { count: autoReleased } = await prisma.order.updateMany({
-    where: { source: "DOTB", dotbStatus: "label_sent", localStatus: "PENDING_REVIEW" },
+    where: {
+      source: "DOTB",
+      localStatus: "PENDING_REVIEW",
+      shippingLabelUrl: { not: null },
+      dotbStatus: { notIn: ["cancelled", "suspended", "returning"] },
+    },
     data: { localStatus: "RELEASED", releasedAt: new Date() },
   });
 

@@ -11,7 +11,9 @@ export type ActivityAction =
   | "DOTB_PACK_FAILED"
   | "ACCOUNT_TOGGLED"
   | "SYNC_RUN"
-  | "EMPLOYEE_PAID";
+  | "EMPLOYEE_PAID"
+  | "STOCK_ADDED"
+  | "STOCK_REMOVED";
 
 export function logActivity(params: {
   action: ActivityAction;

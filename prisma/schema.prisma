@@ -25,6 +25,11 @@ enum LocalStatus {
   SHIPPED
 }
 
+enum StockItemStatus {
+  IN_STOCK
+  REMOVED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -38,6 +43,30 @@ model User {
   ordersCreated  Order[]       @relation("CreatedBy")
   activityLogs   ActivityLog[]
   paymentsMarked Payment[]     @relation("PaymentMarkedBy")
+  stockAdded     StockItem[]   @relation("StockAddedBy")
+  stockRemoved   StockItem[]   @relation("StockRemovedBy")
+}
+
+model StockItem {
+  id       String  @id @default(cuid())
+  title    String?
+  note     String?
+  photoUrl String
+
+  status StockItemStatus @default(IN_STOCK)
+
+  addedAt   DateTime @default(now())
+  addedById String?
+  addedBy   User?    @relation("StockAddedBy", fields: [addedById], references: [id])
+
+  removedAt   DateTime?
+  removedById String?
+  removedBy   User?     @relation("StockRemovedBy", fields: [removedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 model Payment {

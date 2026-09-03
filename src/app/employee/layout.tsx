@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/employee/shipped", label: "Shipped" },
   { href: "/employee/history", label: "History" },
   { href: "/employee/payments", label: "Payments" },
+  { href: "/employee/stock", label: "Stock" },
 ];
 
 export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
