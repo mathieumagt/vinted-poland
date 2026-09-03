@@ -1,5 +1,6 @@
 import { requireAnyRole } from "@/lib/auth/guards";
 import { Nav } from "@/components/Nav";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { getEmployeeBalanceCents, formatEuros } from "@/lib/earnings";
 
 const LINKS = [
@@ -16,6 +17,7 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
 
   return (
     <div className="min-h-screen bg-background">
+      <AutoRefresh />
       <Nav links={LINKS} email={session.email} role={session.role} balance={formatEuros(balanceCents)} />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
     </div>

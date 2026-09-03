@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db";
-import { getEmployeeBalanceCents, formatEuros } from "@/lib/earnings";
+import { getEmployeeBalanceCents, getLifetimeStats, formatEuros, formatZloty } from "@/lib/earnings";
 import { PaymentHistoryTable } from "@/components/PaymentHistoryTable";
 import { Card, CardBody } from "@/components/ui/Card";
 
 export default async function EmployeePaymentsPage() {
-  const [balanceCents, payments] = await Promise.all([
+  const [balanceCents, lifetime, payments] = await Promise.all([
     getEmployeeBalanceCents(),
+    getLifetimeStats(),
     prisma.payment.findMany({ orderBy: { paidAt: "desc" }, include: { markedBy: { select: { email: true } } } }),
   ]);
 
@@ -20,6 +21,28 @@ export default async function EmployeePaymentsPage() {
           <p className="text-2xl font-bold text-green-700">{formatEuros(balanceCents)}</p>
         </CardBody>
       </Card>
+
+      <h2 className="mb-3 text-sm font-medium text-zinc-500">Lifetime summary</h2>
+      <div className="mb-6 grid grid-cols-3 gap-3">
+        <Card>
+          <CardBody>
+            <p className="text-xs text-zinc-500">Parcels shipped</p>
+            <p className="text-lg font-bold text-zinc-900">{lifetime.totalShipped}</p>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody>
+            <p className="text-xs text-zinc-500">Total earned</p>
+            <p className="text-lg font-bold text-zinc-900">{formatEuros(lifetime.totalEarnedCents)}</p>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardBody>
+            <p className="text-xs text-zinc-500">≈ in zloty</p>
+            <p className="text-lg font-bold text-zinc-900">{formatZloty(lifetime.totalEarnedCents)}</p>
+          </CardBody>
+        </Card>
+      </div>
 
       <h2 className="mb-3 text-sm font-medium text-zinc-500">History</h2>
       <PaymentHistoryTable payments={payments} />
