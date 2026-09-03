@@ -104,6 +104,7 @@ async function syncOrdersForAccount(account: { id: string; dotbAccountId: string
     const page = await listOrders({
       accountId: account.dotbAccountId,
       from,
+      status: "label_sent",
       include: ["items"],
       limit: 100,
       cursor,
@@ -141,24 +142,14 @@ export async function runSync(
   const ordersSynced = counts.reduce((sum, n) => sum + n, 0);
 
   // The employee queue is driven by DOTB having a label ready, rather than a
-  // manual admin release — once a label exists, the order is ready to pack
-  // and ship, so it auto-advances out of Pending review in one bulk update.
-  // Checking for a non-null shippingLabelUrl (rather than matching the exact
-  // "label_sent" status string) also catches orders whose very first sync
-  // already finds them further along (packed/shipped on DOTB's side, e.g. a
-  // carrier scan happened before we ever saw the order) — those still need a
-  // human here to physically pack and ship the item, so they must reach the
-  // queue too. Cancelled/suspended/returning orders are excluded even if a
-  // label happens to still be on file. This only ever moves
-  // PENDING_REVIEW -> RELEASED, never touches an order that's already been
-  // released/packed/shipped.
+  // manual admin release — sync only ever pulls orders whose DOTB status is
+  // exactly "label_sent" (see syncOrdersForAccount's `status` filter), so
+  // every DOTB order that reaches this point is ready to pack and ship and
+  // auto-advances out of Pending review in one bulk update. This only ever
+  // moves PENDING_REVIEW -> RELEASED, never touches an order that's already
+  // been released/packed/shipped.
   const { count: autoReleased } = await prisma.order.updateMany({
-    where: {
-      source: "DOTB",
-      localStatus: "PENDING_REVIEW",
-      shippingLabelUrl: { not: null },
-      dotbStatus: { notIn: ["cancelled", "suspended", "returning"] },
-    },
+    where: { source: "DOTB", localStatus: "PENDING_REVIEW", dotbStatus: "label_sent" },
     data: { localStatus: "RELEASED", releasedAt: new Date() },
   });
 
