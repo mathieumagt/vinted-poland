@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { LabelViewer } from "@/components/LabelViewer";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { formatOrderTitle } from "@/lib/orderTitle";
 
 function formatDateTime(date: Date | null) {
   if (!date) return "—";
@@ -22,7 +23,7 @@ export default async function EmployeeOrderDetailPage({ params }: { params: Prom
       <div className="space-y-6 lg:col-span-2">
         <div>
           <div className="mb-1 flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-zinc-900">{order.title}</h1>
+            <h1 className="text-xl font-semibold text-zinc-900">{formatOrderTitle(order.title)}</h1>
             <OrderStatusBadge status={order.localStatus} />
           </div>
           {order.trackingCode && <p className="text-sm text-zinc-500">Ref: {order.trackingCode}</p>}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
+import { formatOrderTitle } from "@/lib/orderTitle";
 import type { Prisma } from "@prisma/client";
 
 /** Exactly the fields OrderTable renders — pass to `select` so list queries don't
@@ -68,7 +69,7 @@ export function OrderTable({ orders, basePath, dateLabel = "Order date" }: { ord
                       </span>
                     )}
                     <span>
-                      <span className="font-medium text-zinc-900 group-hover:text-accent">{order.title}</span>
+                      <span className="font-medium text-zinc-900 group-hover:text-accent">{formatOrderTitle(order.title)}</span>
                       {order.trackingCode && <div className="text-xs text-zinc-400">Ref: {order.trackingCode}</div>}
                     </span>
                   </Link>

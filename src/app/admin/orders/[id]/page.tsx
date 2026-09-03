@@ -7,6 +7,7 @@ import { ReleaseButton } from "@/components/ReleaseButton";
 import { RetryDotbPackButton } from "@/components/RetryDotbPackButton";
 import { ItemSizeEditor } from "@/components/ItemSizeEditor";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { formatOrderTitle } from "@/lib/orderTitle";
 
 function formatDateTime(date: Date | null) {
   if (!date) return "—";
@@ -33,7 +34,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="mb-1 flex items-center gap-3">
-              <h1 className="text-xl font-semibold text-zinc-900">{order.title}</h1>
+              <h1 className="text-xl font-semibold text-zinc-900">{formatOrderTitle(order.title)}</h1>
               <OrderStatusBadge status={order.localStatus} />
             </div>
             <p className="text-sm text-zinc-500">

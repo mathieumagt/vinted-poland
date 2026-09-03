@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { LabelViewer } from "@/components/LabelViewer";
 import { ZoomableImage } from "@/components/ZoomableImage";
+import { formatOrderTitle } from "@/lib/orderTitle";
 
 type OrderItem = { id: string; title: string; size: string | null; thumbnailUrl: string | null };
 
@@ -61,7 +62,7 @@ export function OrderCard({ order }: { order: Order }) {
     <Card className="overflow-hidden">
       <CardHeader className="flex items-start justify-between gap-2 !py-2.5">
         <div>
-          <h3 className="text-sm font-medium leading-snug text-zinc-900">{order.title}</h3>
+          <h3 className="text-sm font-medium leading-snug text-zinc-900">{formatOrderTitle(order.title)}</h3>
           {order.trackingCode && <p className="mt-0.5 text-xs text-zinc-400">Ref: {order.trackingCode}</p>}
         </div>
       </CardHeader>
