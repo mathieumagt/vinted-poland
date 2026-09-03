@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { OrderCard } from "@/components/OrderCard";
 import { AutoRefresh } from "@/components/AutoRefresh";
@@ -40,6 +41,22 @@ export default async function EmployeeQueuePage() {
         <p className="text-sm text-amber-800">
           There can be more than one tag per item — check the collar AND the waist/hips.
         </p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border-2 border-green-400 bg-green-50 px-4 py-3">
+        <div>
+          <p className="text-base font-bold text-green-900">🏷 Garment not in any order below?</p>
+          <p className="text-sm text-green-800">
+            Even after scrolling all the way down — if it&apos;s not there, the order was probably cancelled after
+            the parcel arrived. Don&apos;t throw it away: take a photo and add it in the <strong>Stock</strong> tab.
+          </p>
+        </div>
+        <Link
+          href="/employee/stock"
+          className="shrink-0 rounded-lg border border-green-600 bg-white px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100"
+        >
+          Go to Stock
+        </Link>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

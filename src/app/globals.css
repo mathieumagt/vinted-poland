@@ -116,6 +116,12 @@ iframe {
 .dark .bg-green-100 {
   background-color: rgb(20 83 45 / 0.45);
 }
+.dark .text-green-900 {
+  color: #86efac;
+}
+.dark .border-green-400 {
+  border-color: #16a34a;
+}
 
 .dark .text-amber-800 {
   color: #fbbf24;
